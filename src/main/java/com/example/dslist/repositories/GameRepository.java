@@ -1,25 +1,26 @@
 package com.example.dslist.repositories;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import com.example.dslist.entities.Game;
+import com.example.dslist.projections.GameMinProjection;
 
 public interface GameRepository extends JpaRepository<Game, Long> {
 	
-	/*
-	 * // Custom query to find games by title
-	 * 
-	 * @Query("SELECT g FROM Game g WHERE g.title LIKE %:title%") List<Game>
-	 * findByTitle(@Param("title") String title);
-	 * 
-	 * // Custom query to find games by genre
-	 * 
-	 * @Query("SELECT g FROM Game g WHERE g.genre = :genre") List<Game>
-	 * findByGenre(@Param("genre") String genre);
-	 * 
-	 * // Custom query to find games by platform
-	 * 
-	 * @Query("SELECT g FROM Game g WHERE g.platforms LIKE %:platform%") List<Game>
-	 * findByPlatform(@Param("platform") String platform);
-	 */
+	@Query(nativeQuery = true, value = """
+	        SELECT tb_game.id, tb_game.title, tb_game.game_year AS \"year\", 
+	               tb_game.img_url AS \"imgUrl\", 
+	               tb_game.short_description AS \"shortDescription\", 
+	               tb_belonging.position
+	        FROM tb_game
+	        INNER JOIN tb_belonging ON tb_game.id = tb_belonging.game_id
+	        WHERE tb_belonging.list_id = :listId
+	        ORDER BY tb_belonging.position
+	        """)
+	
+	List<GameMinProjection> searchByList(Long listId);
+
 }
